@@ -10,15 +10,31 @@
 
 #define TIME_MS(N) (N / portTICK_RATE_MS)
 
+#define SIMULATE_IRQ_EVENTS
+
 static espwake_if_t espwake_if;
 static espwake_t espwake;
 
+static const char* espwake_state_str(espwake_state_t state) {
+    switch(state) {
+        case ESPWAKE_STATE_POWERING_ON:
+            return "powering_on";
+        case ESPWAKE_STATE_POWERING_OFF:
+            return "powering_off";
+        case ESPWAKE_STATE_POWERED_ON:
+            return "power_on";
+        case ESPWAKE_STATE_POWERED_OFF:
+        default:
+            return "power_off";
+    }
+}
+
 void check_power_status() {
-    static bool prev_status = false;
-    bool status = espwake_is_powered_on(&espwake);
-    if (prev_status != status) {
-        printf("Power level changed %d -> %d\n", prev_status, status);
-        prev_status = status;
+    static espwake_state_t prev_state = ESPWAKE_STATE_POWERED_OFF;
+    espwake_state_t state = espwake_get_state(&espwake);
+    if (prev_state != state) {
+        printf("Status change %s -> %s\n", espwake_state_str(prev_state), espwake_state_str(state));
+        prev_state = state;
     }
 }
 
@@ -79,6 +95,21 @@ void socket_service_task(void *arg) {
     }
 }
 
+#ifdef SIMULATE_IRQ_EVENTS
+void irq_simulate_timer(void *arg) {
+    switch(espwake_get_state(&espwake)) {
+        case ESPWAKE_STATE_POWERING_ON:
+            espwake_if.power_callback(true, espwake_if.power_callback_arg);
+            break;
+        case ESPWAKE_STATE_POWERING_OFF:
+            espwake_if.power_callback(false, espwake_if.power_callback_arg);
+            break;
+        default:
+            break;
+    }
+}
+#endif
+
 void app_main() {
     ESP_ERROR_CHECK(gpio_install_isr_service(0));
     
@@ -90,4 +121,9 @@ void app_main() {
     xTaskCreate(socket_service_task, "socket_service", 1024, NULL, 1, NULL);
     xTimerHandle power_timer = xTimerCreate("power_status_check", TIME_MS(100), pdTRUE, NULL, check_power_status);
     xTimerStart(power_timer, 0);
+
+    #ifdef SIMULATE_IRQ_EVENTS
+    xTimerHandle sim_timer = xTimerCreate("power_sim_timer", TIME_MS(10000), pdTRUE, NULL, irq_simulate_timer);
+    xTimerStart(sim_timer, 0);
+    #endif
 }

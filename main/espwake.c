@@ -39,16 +39,37 @@ static void espwake_dispatch_sequence(espwake_t *espwake, espwake_switch_sequenc
     xSemaphoreGive(espwake->seq_ready_semaphore);
 }
 
+static void pwroff_irq_handler(bool poweron, void *arg) {
+    espwake_t *espwake = (espwake_t*)arg;
+    if (poweron) {
+        switch(espwake->state) {
+            case ESPWAKE_STATE_POWERED_OFF:
+            case ESPWAKE_STATE_POWERING_ON:
+                espwake->state = ESPWAKE_STATE_POWERED_ON;
+                break;
+            default:
+                break;
+        }
+    } else {
+        switch(espwake->state) {
+            case ESPWAKE_STATE_POWERED_ON:
+            case ESPWAKE_STATE_POWERING_OFF:
+                espwake->state = ESPWAKE_STATE_POWERED_OFF;
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 void espwake_init(espwake_t *espwake, espwake_if_t *interface) {
     espwake->interface = interface;
     espwake->seq_ready_semaphore = xSemaphoreCreateCounting(1, 0);
     espwake->seq_empty_semaphore = xSemaphoreCreateCounting(1, 1);
     espwake->sequence = ESPWAKE_SWITCH_SEQUENCE_NONE;
+    espwake->state = espwake_if_poll_power_status(interface) ? ESPWAKE_STATE_POWERED_ON : ESPWAKE_STATE_POWERED_OFF;
+    espwake_if_set_pwr_callback(interface, pwroff_irq_handler, espwake);
     xTaskCreate(espwake_switch_control_task, "espwake_switch_controller", 256, espwake, 2, &espwake->switch_controller_task);
-}
-
-bool espwake_is_powered_on(espwake_t *espwake) {
-    return espwake_if_poll_power_status(espwake->interface);
 }
 
 void espwake_destroy(espwake_t *espwake) {
@@ -57,22 +78,25 @@ void espwake_destroy(espwake_t *espwake) {
 }
 
 void espwake_power_on(espwake_t *espwake) {
-    if (espwake_if_poll_power_status(espwake->interface)) {
+    if (espwake->state == ESPWAKE_STATE_POWERED_ON || espwake->state == ESPWAKE_STATE_POWERING_ON) {
         return;
     }
+    espwake->state = ESPWAKE_STATE_POWERING_ON;
     espwake_dispatch_sequence(espwake, ESPWAKE_SWITCH_SEQUENCE_START);
 }
 
 void espwake_shutdown(espwake_t *espwake) {
-    if (!espwake_if_poll_power_status(espwake->interface)) {
+    if (espwake->state == ESPWAKE_STATE_POWERING_OFF || espwake->state == ESPWAKE_STATE_POWERED_OFF) {
         return;
     }
+    espwake->state = ESPWAKE_STATE_POWERING_OFF;
     espwake_dispatch_sequence(espwake, ESPWAKE_SWITCH_SEQUENCE_SHUTDOWN);
 }
 
 void espwake_force_off(espwake_t *espwake) {
-    if (!espwake_if_poll_power_status(espwake->interface)) {
+    if (espwake->state == ESPWAKE_STATE_POWERED_OFF) {
         return;
     }
+    espwake->state = ESPWAKE_STATE_POWERING_OFF;
     espwake_dispatch_sequence(espwake, ESPWAKE_SWITCH_SEQUENCE_FORCEOFF);
 }
