@@ -1,0 +1,39 @@
+menu "espwake"
+    config ESPWAKE_WIFI_SSID
+        string "WiFi SSID"
+        default ""
+        help
+            SSID (network name) for espwake to connect to.
+
+    config ESPWAKE_WIFI_PASSWORD
+        string "WiFi Password"
+        default ""
+        help
+            WiFi password (WPA or WPA2) for espwake to use.
+
+    config ESPWAKE_HOSTNAME
+        string "Hostname"
+        default "espwake"
+        help
+            The DHCP advertised hostname of the espwake instance
+    
+    menu "Sequence timing"
+        config ESPWAKE_SEQ_START_HOLD_MS
+            int "Start hold time (ms)"
+            default "300"
+            help
+                The time the power button is held when starting the PC
+        
+        config ESPWAKE_SEQ_SHUTDOWN_HOLD_MS
+            int "Shutdown hold time (ms)"
+            default "300"
+            help
+                The time the power button is held when sending shutdown to the PC
+        
+        config ESPWAKE_SEQ_FORCEOFF_HOLD_MS
+            int "Force off hold time (ms)"
+            default "3000"
+            help
+                The time the power button is held when forcing power off of the PC
+    endmenu
+endmenu

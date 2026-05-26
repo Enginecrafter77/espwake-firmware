@@ -1,0 +1,20 @@
+{
+        "name": "Docker compose",
+        "dockerComposeFile": [
+                "./docker-compose.yml"
+        ],
+        "service": "dev",
+        "workspaceFolder": "/project",
+        "customizations": {
+                "vscode": {
+                        "extensions": [
+                            "ms-vscode.cmake-tools",
+                            "ms-vscode.cpptools",
+                            "carlos-algms.make-task-provider",
+                            "ms-vscode.vscode-serial-monitor"
+                        ],
+                        "settings": {}
+                }
+        },
+        "remoteUser": "root"
+}

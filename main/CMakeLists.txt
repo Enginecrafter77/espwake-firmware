@@ -1,0 +1,3 @@
+file(GLOB PROJECT_SOURCE_FILES *.c)
+
+idf_component_register(SRCS ${PROJECT_SOURCE_FILES} INCLUDE_DIRS "")

@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "app-build",
+            "type": "make",
+            "targetName": "app",
+            "group": "build",
+            "args": ["-j12"],
+            "makeFileRelativePath": "Makefile"
+        },
+        {
+            "label": "app-flash",
+            "type": "make",
+            "targetName": "app-flash",
+            "dependsOn": "app-build",
+            "group": "none",
+            "makeFileRelativePath": "Makefile"
+        },
+        {
+            "label": "flash",
+            "type": "make",
+            "targetName": "flash",
+            "dependsOn": "app-build",
+            "group": "none",
+            "makeFileRelativePath": "Makefile"
+        }
+    ]
+}
