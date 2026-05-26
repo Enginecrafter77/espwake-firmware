@@ -18,7 +18,7 @@
                 "cwd": "${workspaceFolder}/build",
                 "env": {
                     "ESPPORT": "/dev/ttyUSB0",
-                    "ESPBAUD": "78400"
+                    "ESPBAUD": "115200"
                 }
             },
             "dependsOn": "build",
