@@ -1,6 +1,7 @@
 FROM mbenabda/esp8266-rtos-sdk:latest
 
 RUN apt-get update && apt-get install -y apt-utils && DEBIAN_FRONTEND=noninteractive apt-get install -y udev cmake
+RUN useradd -u 1000 -U -G dialout -d /home/dev -m -s /bin/bash dev
 
 COPY sdk_patches /opt/sdk_patches
 

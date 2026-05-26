@@ -2,28 +2,28 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "app-build",
-            "type": "make",
-            "targetName": "app",
-            "group": "build",
-            "args": ["-j12"],
-            "makeFileRelativePath": "Makefile"
-        },
-        {
-            "label": "app-flash",
-            "type": "make",
-            "targetName": "app-flash",
-            "dependsOn": "app-build",
-            "group": "none",
-            "makeFileRelativePath": "Makefile"
+            "label": "build",
+            "type": "cmake",
+            "command": "build",
+            "group": "build"
         },
         {
             "label": "flash",
-            "type": "make",
-            "targetName": "flash",
-            "dependsOn": "app-build",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "flash"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build",
+                "env": {
+                    "ESPPORT": "/dev/ttyUSB0",
+                    "ESPBAUD": "78400"
+                }
+            },
+            "dependsOn": "build",
             "group": "none",
-            "makeFileRelativePath": "Makefile"
+            "problemMatcher": []
         }
     ]
 }
