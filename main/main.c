@@ -4,47 +4,18 @@
 #include <lwip/sockets.h>
 #include <stdlib.h>
 #include <string.h>
+#include <driver/gpio.h>
 
-#include "espwake_if.h"
+#include "espwake.h"
 
 #define TIME_MS(N) (N / portTICK_RATE_MS)
 
-typedef enum {
-    SWITCH_SEQUENCE_NONE,
-    SWITCH_SEQUENCE_START,
-    SWITCH_SEQUENCE_SHUTDOWN,
-    SWITCH_SEQUENCE_FORCEOFF
-} switch_sequence_type_t;
-
-switch_sequence_type_t seq_type;
-xSemaphoreHandle semaphore;
-
-#define HOLD_SWITCH(T) do { espwake_if_set_switch(true); vTaskDelay(TIME_MS(T)); espwake_if_set_switch(false); } while(0)
-
-void switch_service_task(void *arg) {
-    espwake_if_set_switch(false);
-    while(1) {
-        xSemaphoreTake(semaphore, portMAX_DELAY);
-        switch(seq_type) {
-            case SWITCH_SEQUENCE_START:
-                HOLD_SWITCH(CONFIG_ESPWAKE_SEQ_START_HOLD_MS);
-                break;
-            case SWITCH_SEQUENCE_SHUTDOWN:
-                HOLD_SWITCH(CONFIG_ESPWAKE_SEQ_SHUTDOWN_HOLD_MS);
-                break;
-            case SWITCH_SEQUENCE_FORCEOFF:
-                HOLD_SWITCH(CONFIG_ESPWAKE_SEQ_FORCEOFF_HOLD_MS);
-                break;
-            default:
-                break;
-        }
-        seq_type = SWITCH_SEQUENCE_NONE;
-    }
-}
+static espwake_if_t espwake_if;
+static espwake_t espwake;
 
 void check_power_status() {
     static bool prev_status = false;
-    bool status = espwake_if_poll_power_status();
+    bool status = espwake_is_powered_on(&espwake);
     if (prev_status != status) {
         printf("Power level changed %d -> %d\n", prev_status, status);
         prev_status = status;
@@ -76,11 +47,6 @@ void user_wifi_init() {
     ESP_ERROR_CHECK(esp_wifi_connect());
 }
 
-void trigger_switch_sequence(switch_sequence_type_t type) {
-    seq_type = type;
-    xSemaphoreGive(semaphore);
-}
-
 void socket_service_task(void *arg) {
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -99,13 +65,13 @@ void socket_service_task(void *arg) {
         printf("R CMD %d\n", buffer[0]);
         switch(buffer[0]) {
             case 0:
-                trigger_switch_sequence(SWITCH_SEQUENCE_START);
+                espwake_power_on(&espwake);
                 break;
             case 1:
-                trigger_switch_sequence(SWITCH_SEQUENCE_SHUTDOWN);
+                espwake_shutdown(&espwake);
                 break;
             case 2:
-                trigger_switch_sequence(SWITCH_SEQUENCE_FORCEOFF);
+                espwake_force_off(&espwake);
                 break;
             default:
                 break;
@@ -114,15 +80,14 @@ void socket_service_task(void *arg) {
 }
 
 void app_main() {
-    espwake_if_init();
+    ESP_ERROR_CHECK(gpio_install_isr_service(0));
+    
+    espwake_if_init(&espwake_if);
+    espwake_init(&espwake, &espwake_if);
 
     user_wifi_init();
 
-    semaphore = xSemaphoreCreateCounting(1, 0);
-
-    xTaskCreate(switch_service_task, "switch_controller", 256, NULL, 2, NULL);
     xTaskCreate(socket_service_task, "socket_service", 1024, NULL, 1, NULL);
-
     xTimerHandle power_timer = xTimerCreate("power_status_check", TIME_MS(100), pdTRUE, NULL, check_power_status);
     xTimerStart(power_timer, 0);
 }
