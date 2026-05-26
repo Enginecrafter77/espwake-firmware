@@ -1,0 +1,11 @@
+[
+    {
+        "name": "container-xtensa-lx106",
+        "compilers": {
+            "C": "/opt/toolchains/lx106/bin/xtensa-lx106-elf-cc",
+            "CXX": "/opt/toolchains/lx106/bin/xtensa-lx106-elf-c++"
+        },
+        "isTrusted": true,
+        "keep": true
+    }
+]
