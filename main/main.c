@@ -10,8 +10,6 @@
 
 #define TIME_MS(N) (N / portTICK_RATE_MS)
 
-#define SIMULATE_IRQ_EVENTS
-
 static espwake_if_t espwake_if;
 static espwake_t espwake;
 
@@ -95,7 +93,7 @@ void socket_service_task(void *arg) {
     }
 }
 
-#ifdef SIMULATE_IRQ_EVENTS
+#ifdef CONFIG_ESPWAKE_DEBUG_SIMULATED_POWER_EVENTS
 void irq_simulate_timer(void *arg) {
     switch(espwake_get_state(&espwake)) {
         case ESPWAKE_STATE_POWERING_ON:
@@ -122,7 +120,7 @@ void app_main() {
     xTimerHandle power_timer = xTimerCreate("power_status_check", TIME_MS(100), pdTRUE, NULL, check_power_status);
     xTimerStart(power_timer, 0);
 
-    #ifdef SIMULATE_IRQ_EVENTS
+    #ifdef CONFIG_ESPWAKE_DEBUG_SIMULATED_POWER_EVENTS
     xTimerHandle sim_timer = xTimerCreate("power_sim_timer", TIME_MS(10000), pdTRUE, NULL, irq_simulate_timer);
     xTimerStart(sim_timer, 0);
     #endif

@@ -6,8 +6,6 @@
 #define GPIO_PIN_SWCTRL GPIO_NUM_4
 #define GPIO_PIN_PWROFF GPIO_NUM_5
 
-#define ESPWAKE_VISUALIZE_SWITCH_BY_LED
-
 static void __espwake_pwroff_irq_handler(void *arg);
 static bool __espwake_pwroff_poller();
 static void __espwake_switch_setter(bool value);
@@ -31,7 +29,7 @@ void espwake_if_init(espwake_if_t *interface) {
     
     ESP_ERROR_CHECK(gpio_isr_handler_add(GPIO_PIN_PWROFF, __espwake_pwroff_irq_handler, interface));
 
-    #ifdef ESPWAKE_VISUALIZE_SWITCH_BY_LED
+    #ifdef CONFIG_ESPWAKE_DEBUG_NODEMCU_LED
     cfg.mode = GPIO_MODE_OUTPUT;
     cfg.pin_bit_mask = (1 << 16);
     cfg.pull_down_en = 0;
@@ -49,7 +47,7 @@ void espwake_if_init(espwake_if_t *interface) {
 static void __espwake_switch_setter(bool switch_value) {
     gpio_set_level(GPIO_PIN_SWCTRL, (switch_value ? 1 : 0));
 
-    #ifdef ESPWAKE_VISUALIZE_SWITCH_BY_LED
+    #ifdef CONFIG_ESPWAKE_DEBUG_NODEMCU_LED
     gpio_set_level(GPIO_NUM_16, (switch_value ? 0 : 1));
     #endif
 }

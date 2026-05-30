@@ -17,6 +17,21 @@ menu "espwake"
         help
             The DHCP advertised hostname of the espwake instance
     
+    menu "Debug"
+        config ESPWAKE_DEBUG_SIMULATED_POWER_EVENTS
+            bool "Simulated power events"
+            default "false"
+            help
+                Enabling this option adds a timer which simulates the power state changes as if they were caused by HW.
+                Useful for debugging without the espwake hardware connected
+        
+        config ESPWAKE_DEBUG_NODEMCU_LED
+            bool "NodeMCU debug led"
+            default "false"
+            help
+                When the power switch is held, light up the NodeMCU blue LED (GPIO16). Useful for debugging.
+    endmenu
+    
     menu "Sequence timing"
         config ESPWAKE_SEQ_START_HOLD_MS
             int "Start hold time (ms)"
