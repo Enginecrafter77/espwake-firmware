@@ -24,7 +24,7 @@ void espwake_if_init(espwake_if_t *interface) {
     cfg.pin_bit_mask = (1 << GPIO_PIN_PWROFF);
     cfg.pull_down_en = 0;
     cfg.pull_up_en = 1;
-    cfg.intr_type = GPIO_INTR_DISABLE;
+    cfg.intr_type = GPIO_INTR_ANYEDGE;
     ESP_ERROR_CHECK(gpio_config(&cfg));
     
     ESP_ERROR_CHECK(gpio_isr_handler_add(GPIO_PIN_PWROFF, __espwake_pwroff_irq_handler, interface));
@@ -34,7 +34,7 @@ void espwake_if_init(espwake_if_t *interface) {
     cfg.pin_bit_mask = (1 << 16);
     cfg.pull_down_en = 0;
     cfg.pull_up_en = 0;
-    cfg.intr_type = GPIO_INTR_ANYEDGE;
+    cfg.intr_type = GPIO_INTR_DISABLE;
     ESP_ERROR_CHECK(gpio_config(&cfg));
     #endif
 
