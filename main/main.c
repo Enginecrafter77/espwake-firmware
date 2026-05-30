@@ -10,30 +10,31 @@
 
 #define TIME_MS(N) (N / portTICK_RATE_MS)
 
+#define ESPWAKE_PROTO_COMMAND_CHECK 0
+#define ESPWAKE_PROTO_COMMAND_START 1
+#define ESPWAKE_PROTO_COMMAND_SHUTDOWN 2
+#define ESPWAKE_PROTO_COMMAND_FORCEOFF 3
+
+#define ESPWAKE_PROTO_RESP_POWERED_OFF 0
+#define ESPWAKE_PROTO_RESP_POWERING_OFF 1
+#define ESPWAKE_PROTO_RESP_POWERING_ON 2
+#define ESPWAKE_PROTO_RESP_POWERED_ON 3
+
 static espwake_if_t espwake_if;
 static espwake_t espwake;
 
-static const char* espwake_state_str(espwake_state_t state) {
-    switch(state) {
-        case ESPWAKE_STATE_POWERING_ON:
-            return "powering_on";
-        case ESPWAKE_STATE_POWERING_OFF:
-            return "powering_off";
-        case ESPWAKE_STATE_POWERED_ON:
-            return "power_on";
+static uint8_t espwake_proto_map_state(espwake_state_t state) {
+    switch (state) {
         case ESPWAKE_STATE_POWERED_OFF:
-        default:
-            return "power_off";
+            return ESPWAKE_PROTO_RESP_POWERED_OFF;
+        case ESPWAKE_STATE_POWERING_OFF:
+            return ESPWAKE_PROTO_RESP_POWERING_OFF;
+        case ESPWAKE_STATE_POWERING_ON:
+            return ESPWAKE_PROTO_RESP_POWERING_ON;
+        case ESPWAKE_STATE_POWERED_ON:
+            return ESPWAKE_PROTO_RESP_POWERED_ON;
     }
-}
-
-void check_power_status() {
-    static espwake_state_t prev_state = ESPWAKE_STATE_POWERED_OFF;
-    espwake_state_t state = espwake_get_state(&espwake);
-    if (prev_state != state) {
-        printf("Status change %s -> %s\n", espwake_state_str(prev_state), espwake_state_str(state));
-        prev_state = state;
-    }
+    return ESPWAKE_PROTO_RESP_POWERED_OFF;
 }
 
 void user_wifi_init() {
@@ -72,22 +73,23 @@ void socket_service_task(void *arg) {
     bind(sock, (const struct sockaddr*)&addr, sizeof(struct sockaddr_in));
 
     struct sockaddr_in peer;
-    socklen_t peer_len;
+    socklen_t peer_len = sizeof(struct sockaddr_in);
     uint8_t buffer[4];
     while(1) {
         recvfrom(sock, buffer, 4, 0, (struct sockaddr*)&peer, &peer_len);
-        printf("R CMD %d\n", buffer[0]);
         switch(buffer[0]) {
-            case 0:
+            case ESPWAKE_PROTO_COMMAND_START:
                 espwake_power_on(&espwake);
                 break;
-            case 1:
+            case ESPWAKE_PROTO_COMMAND_SHUTDOWN:
                 espwake_shutdown(&espwake);
                 break;
-            case 2:
+            case ESPWAKE_PROTO_COMMAND_FORCEOFF:
                 espwake_force_off(&espwake);
                 break;
             default:
+                buffer[0] = espwake_proto_map_state(espwake_get_state(&espwake));
+                sendto(sock, buffer, 4, 0, (const struct sockaddr*)&peer, peer_len);
                 break;
         }
     }
@@ -116,9 +118,7 @@ void app_main() {
 
     user_wifi_init();
 
-    xTaskCreate(socket_service_task, "socket_service", 1024, NULL, 1, NULL);
-    xTimerHandle power_timer = xTimerCreate("power_status_check", TIME_MS(100), pdTRUE, NULL, check_power_status);
-    xTimerStart(power_timer, 0);
+    xTaskCreate(socket_service_task, "socket_service", 2048, NULL, 1, NULL);
 
     #ifdef CONFIG_ESPWAKE_DEBUG_SIMULATED_POWER_EVENTS
     xTimerHandle sim_timer = xTimerCreate("power_sim_timer", TIME_MS(10000), pdTRUE, NULL, irq_simulate_timer);
