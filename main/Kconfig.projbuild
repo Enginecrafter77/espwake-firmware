@@ -32,7 +32,7 @@ menu "espwake"
         
         config ESPWAKE_SEQ_FORCEOFF_HOLD_MS
             int "Force off hold time (ms)"
-            default "3000"
+            default "5000"
             help
                 The time the power button is held when forcing power off of the PC
     endmenu
