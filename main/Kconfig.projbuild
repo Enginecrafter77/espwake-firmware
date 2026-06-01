@@ -10,6 +10,12 @@ menu "espwake"
         default ""
         help
             WiFi password (WPA or WPA2) for espwake to use.
+    
+    config ESPWAKE_CONTROL_PASSWORD
+        string "Protocol password"
+        default "espwake"
+        help
+            The password used to authorize control actions
 
     config ESPWAKE_HOSTNAME
         string "Hostname"
