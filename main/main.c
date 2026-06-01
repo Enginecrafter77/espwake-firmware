@@ -2,6 +2,7 @@
 #include <freertos/timers.h>
 #include <esp_wifi.h>
 #include <esp_vfs_dev.h>
+#include <esp_spiffs.h>
 #include <stdlib.h>
 #include <string.h>
 #include <driver/gpio.h>
@@ -10,24 +11,18 @@
 #include "espwake.h"
 #include "espwake_sck.h"
 #include "console_if.h"
+#include "config.h"
 
 #define TIME_MS(N) (N / portTICK_RATE_MS)
 
-void user_wifi_init() {
+void user_wifi_init(const espwake_config_t *config) {
     tcpip_adapter_init();
 
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     wifi_init_config_t wifi_init_config = WIFI_INIT_CONFIG_DEFAULT();
-    wifi_config_t wifi_config = {
-        .sta = {
-            .ssid = CONFIG_ESPWAKE_WIFI_SSID,
-            .password = CONFIG_ESPWAKE_WIFI_PASSWORD,
-            .threshold = {
-                .authmode = WIFI_AUTH_WPA2_PSK
-            }
-        }
-    };
+    wifi_config_t wifi_config;
+    espwake_config_wifi(&wifi_config, config);
 
     ESP_ERROR_CHECK(esp_wifi_init(&wifi_init_config));
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
@@ -54,9 +49,19 @@ void console_init() {
     esp_vfs_dev_uart_use_driver(CONFIG_ESP_CONSOLE_UART_NUM);
 }
 
-static espwake_if_t espwake_if;
-static espwake_t espwake;
-static espwake_sck_service_t espwake_sck_service;
+void configfs_init() {
+    esp_vfs_spiffs_conf_t cfg = {
+        .base_path = "/config",
+        .partition_label = NULL,
+        .max_files = 4,
+        .format_if_mount_failed = true
+    };
+    ESP_ERROR_CHECK(esp_vfs_spiffs_register(&cfg));
+}
+
+espwake_if_t espwake_if;
+espwake_t espwake;
+espwake_sck_service_t espwake_sck_service;
 
 #ifdef CONFIG_ESPWAKE_DEBUG_SIMULATED_POWER_EVENTS
 void irq_simulate_timer(void *arg) {
@@ -79,13 +84,18 @@ void app_main() {
     espwake_if_init(&espwake_if);
     espwake_init(&espwake, &espwake_if);
 
+    configfs_init();
     console_init();
-    user_wifi_init();
+
+    espwake_config_t config;
+    espwake_config_load(&config);
+
+    user_wifi_init(&config);
 
     espwake_sck_service_create(&espwake_sck_service, &espwake);
-    espwake_sck_service_set_password(&espwake_sck_service, CONFIG_ESPWAKE_CONTROL_PASSWORD);
+    espwake_sck_service_set_password(&espwake_sck_service, config.control_password);
 
-    espwake_console_if_init(&espwake);
+    espwake_console_if_init();
 
     #ifdef CONFIG_ESPWAKE_DEBUG_SIMULATED_POWER_EVENTS
     xTimerHandle sim_timer = xTimerCreate("power_sim_timer", TIME_MS(10000), pdTRUE, NULL, irq_simulate_timer);
