@@ -17,8 +17,10 @@ def command_byte(cstr):
 		return 2
 	elif cstr == "forceoff":
 		return 3
-	else:
+	elif cstr == "status":
 		return 0
+	else:
+		raise ValueError("Unknown command")
 
 def map_reply_status(status):
 	if status == 0:
@@ -54,7 +56,9 @@ def hexstring(data):
 
 sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
 
-sck.sendto(make_request(command, password), (espwake_addr, espwake_port))
+req = make_request(command, password)
+#print(f"Sending {hexstring(req)}")
+sck.sendto(req, (espwake_addr, espwake_port))
 reply_data, addr = sck.recvfrom(4)
 
 print(f"Received reply: {hexstring(reply_data)} {read_reply(reply_data)}")
