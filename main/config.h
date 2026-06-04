@@ -4,11 +4,13 @@
 #define ESPWAKE_CONFIG_WIFI_SSID_LENGTH 32
 #define ESPWAKE_CONFIG_WIFI_PASSWORD_LENGTH 64
 #define ESPWAKE_CONFIG_CONTROL_PASSWORD_LENGTH 16
+#define ESPWAKE_CONFIG_HOSTNAME_LENGTH 32
 
 typedef struct {
     char wifi_ssid[ESPWAKE_CONFIG_WIFI_SSID_LENGTH];
     char wifi_password[ESPWAKE_CONFIG_WIFI_PASSWORD_LENGTH];
     char control_password[ESPWAKE_CONFIG_CONTROL_PASSWORD_LENGTH];
+    char hostname[ESPWAKE_CONFIG_HOSTNAME_LENGTH];
 } espwake_config_t;
 
 extern const espwake_config_t espwake_config_defaults;

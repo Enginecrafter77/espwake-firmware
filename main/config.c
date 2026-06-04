@@ -8,7 +8,8 @@
 const espwake_config_t espwake_config_defaults = {
     .wifi_ssid = CONFIG_ESPWAKE_WIFI_SSID,
     .wifi_password = CONFIG_ESPWAKE_WIFI_PASSWORD,
-    .control_password = CONFIG_ESPWAKE_CONTROL_PASSWORD
+    .control_password = CONFIG_ESPWAKE_CONTROL_PASSWORD,
+    .hostname = CONFIG_ESPWAKE_HOSTNAME
 };
 
 void espwake_config_load(espwake_config_t *config) {
@@ -17,6 +18,7 @@ void espwake_config_load(espwake_config_t *config) {
         fread(config->wifi_ssid, sizeof(char), ESPWAKE_CONFIG_WIFI_SSID_LENGTH, file);
         fread(config->wifi_password, sizeof(char), ESPWAKE_CONFIG_WIFI_PASSWORD_LENGTH, file);
         fread(config->control_password, sizeof(char), ESPWAKE_CONFIG_CONTROL_PASSWORD_LENGTH, file);
+        fread(config->hostname, sizeof(char), ESPWAKE_CONFIG_HOSTNAME_LENGTH, file);
         fclose(file);
     } else {
         *config = espwake_config_defaults;
@@ -31,6 +33,8 @@ void espwake_config_save(const espwake_config_t *config) {
     fwrite(config->wifi_ssid, sizeof(char), ESPWAKE_CONFIG_WIFI_SSID_LENGTH, file);
     fwrite(config->wifi_password, sizeof(char), ESPWAKE_CONFIG_WIFI_PASSWORD_LENGTH, file);
     fwrite(config->control_password, sizeof(char), ESPWAKE_CONFIG_CONTROL_PASSWORD_LENGTH, file);
+    fwrite(config->hostname, sizeof(char), ESPWAKE_CONFIG_HOSTNAME_LENGTH, file);
+    fflush(file);
     fclose(file);
 }
 

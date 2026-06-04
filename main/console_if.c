@@ -47,7 +47,7 @@ static int espwake_cmd_status(int argc, char **argv) {
 }
 
 static int espwake_cmd_set_password(int argc, char **argv) {
-    if (argc < 1) {
+    if (argc < 2) {
         return 1;
     }
 
@@ -61,7 +61,7 @@ static int espwake_cmd_set_password(int argc, char **argv) {
 }
 
 static int espwake_cmd_set_wifi_auth(int argc, char **argv) {
-    if (argc < 2) {
+    if (argc < 3) {
         return 1;
     }
 
@@ -76,6 +76,23 @@ static int espwake_cmd_set_wifi_auth(int argc, char **argv) {
     espwake_config_wifi(&wificfg, &config);
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wificfg));
     ESP_ERROR_CHECK(esp_wifi_connect());
+
+    return 0;
+}
+
+static int espwake_cmd_set_hostname(int argc, char **argv) {
+    espwake_config_t config;
+    espwake_config_load(&config);
+
+    if (argc < 2) {
+        puts(config.hostname);
+        return 0;
+    }
+
+    strncpy(config.hostname, argv[1], ESPWAKE_CONFIG_HOSTNAME_LENGTH);
+    espwake_config_save(&config);
+
+    ESP_ERROR_CHECK(tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_STA, config.hostname));
 
     return 0;
 }
@@ -120,6 +137,7 @@ void espwake_console_if_init() {
     REGISTER_CMD("forceoff", espwake_cmd_forceoff, "Forcefully powers down the connected PC", NULL);
     REGISTER_CMD("status", espwake_cmd_status, "Shows the current status of the connected PC", NULL);
     REGISTER_CMD("passwd", espwake_cmd_set_password, "Set authentication password", "<password>");
+    REGISTER_CMD("hostname", espwake_cmd_set_hostname, "Set device hostname", "<hostname>");
     REGISTER_CMD("wifi", espwake_cmd_set_wifi_auth, "Set wifi SSID and password", "<ssid> <password>");
     esp_console_register_help_command();
 
