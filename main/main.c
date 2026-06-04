@@ -13,6 +13,8 @@
 #include "console_if.h"
 #include "config.h"
 
+#define STARTUP_STRING ("espwake version " ESPWAKE_VERSION " compiled " ESPWAKE_COMPILE_DATE)
+
 #define TIME_MS(N) (N / portTICK_RATE_MS)
 
 void user_wifi_init(const espwake_config_t *config) {
@@ -86,6 +88,8 @@ void app_main() {
 
     configfs_init();
     console_init();
+
+    puts(STARTUP_STRING);
 
     espwake_config_t config;
     espwake_config_load(&config);
