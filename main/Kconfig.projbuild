@@ -1,23 +1,11 @@
 menu "espwake"
-    config ESPWAKE_WIFI_SSID
-        string "WiFi SSID"
-        default ""
-        help
-            SSID (network name) for espwake to connect to.
-
-    config ESPWAKE_WIFI_PASSWORD
-        string "WiFi Password"
-        default ""
-        help
-            WiFi password (WPA or WPA2) for espwake to use.
-    
-    config ESPWAKE_CONTROL_PASSWORD
-        string "Protocol password"
+    config ESPWAKE_DEFAULT_CONTROL_PASSWORD
+        string "Default protocol password"
         default "espwake"
         help
             The password used to authorize control actions
 
-    config ESPWAKE_HOSTNAME
+    config ESPWAKE_DEFAULT_HOSTNAME
         string "Hostname"
         default "espwake"
         help

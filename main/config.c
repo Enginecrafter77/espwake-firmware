@@ -6,10 +6,10 @@
 #define CONFIG_PATH "/config/espwake"
 
 const espwake_config_t espwake_config_defaults = {
-    .wifi_ssid = CONFIG_ESPWAKE_WIFI_SSID,
-    .wifi_password = CONFIG_ESPWAKE_WIFI_PASSWORD,
-    .control_password = CONFIG_ESPWAKE_CONTROL_PASSWORD,
-    .hostname = CONFIG_ESPWAKE_HOSTNAME
+    .wifi_ssid = "",
+    .wifi_password = "",
+    .control_password = CONFIG_ESPWAKE_DEFAULT_CONTROL_PASSWORD,
+    .hostname = CONFIG_ESPWAKE_DEFAULT_HOSTNAME
 };
 
 void espwake_config_load(espwake_config_t *config) {
