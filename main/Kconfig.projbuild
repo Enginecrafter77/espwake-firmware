@@ -11,6 +11,13 @@ menu "espwake"
         help
             The DHCP advertised hostname of the espwake instance
     
+    config ESPWAKE_HOSTNAME_APPEND_MAC
+        bool "Append MAC to hostname"
+        default "true"
+        help
+            If enabled, the last 3 bytes of the programmed MAC address are appended to the hostname.
+            This option represents a best effort approach to make sure that each device gets its own unique hostname.
+    
     menu "Debug"
         config ESPWAKE_DEBUG_SIMULATED_POWER_EVENTS
             bool "Simulated power events"

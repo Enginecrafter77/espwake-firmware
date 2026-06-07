@@ -83,6 +83,13 @@ static int espwake_cmd_set_hostname(int argc, char **argv) {
     return 0;
 }
 
+static int espwake_cmd_test(int argc, char **argv) {
+    espwake_config_t config;
+    espwake_config_defaults(&config);
+    printf("default hostname: %s\n", config.hostname);
+    return 0;
+}
+
 void espwake_serial_operator_task(void *arg) {
     int probe_status = linenoiseProbe();
     if (probe_status) {
@@ -125,6 +132,7 @@ void espwake_console_if_init() {
     REGISTER_CMD("passwd", espwake_cmd_set_password, "Set authentication password", "<password>");
     REGISTER_CMD("hostname", espwake_cmd_set_hostname, "Set device hostname", "<hostname>");
     REGISTER_CMD("wifi", espwake_cmd_set_wifi_auth, "Set wifi SSID and password", "<ssid> <password>");
+    REGISTER_CMD("test", espwake_cmd_test, "Test command", NULL);
     esp_console_register_help_command();
 
     xTaskCreate(espwake_serial_operator_task, "serial_operator_task", 2048, NULL, 1, NULL);

@@ -13,9 +13,8 @@ typedef struct {
     char hostname[ESPWAKE_CONFIG_HOSTNAME_LENGTH];
 } espwake_config_t;
 
-extern const espwake_config_t espwake_config_defaults;
-
 void espwake_config_load(espwake_config_t *config);
 void espwake_config_save(const espwake_config_t *config);
+void espwake_config_defaults(espwake_config_t *config);
 
 void espwake_config_wifi(wifi_config_t *wifi, const espwake_config_t *config);
