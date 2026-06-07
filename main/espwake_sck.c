@@ -8,6 +8,8 @@ static espwake_proto_device_status_t espwake_proto_map_state(espwake_state_t sta
             return ESPWAKE_PROTO_DEV_STATUS_POWERED_OFF;
         case ESPWAKE_STATE_POWERING_OFF:
             return ESPWAKE_PROTO_DEV_STATUS_POWERING_OFF;
+        case ESPWAKE_STATE_SUSPENDED:
+            return ESPWAKE_PROTO_DEV_STATUS_SUSPENDED;
         case ESPWAKE_STATE_POWERING_ON:
             return ESPWAKE_PROTO_DEV_STATUS_POWERING_ON;
         case ESPWAKE_STATE_POWERED_ON:

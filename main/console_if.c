@@ -12,20 +12,6 @@
 extern espwake_t espwake;
 extern espwake_sck_service_t espwake_sck_service;
 
-static const char* espwake_state_to_string(espwake_state_t state) {
-    switch(state) {
-        case ESPWAKE_STATE_POWERED_OFF:
-            return "power_off";
-        case ESPWAKE_STATE_POWERING_OFF:
-            return "powering_off";
-        case ESPWAKE_STATE_POWERING_ON:
-            return "powering_on";
-        case ESPWAKE_STATE_POWERED_ON:
-            return "powered_on";
-    }
-    return "<<unknown>>";
-}
-
 static int espwake_cmd_start(int argc, char **argv) {
     espwake_power_on(&espwake);
     return 0;
@@ -42,7 +28,7 @@ static int espwake_cmd_forceoff(int argc, char **argv) {
 }
 
 static int espwake_cmd_status(int argc, char **argv) {
-    puts(espwake_state_to_string(espwake_get_state(&espwake)));
+    puts(espwake_state_name(espwake_get_state(&espwake)));
     return 0;
 }
 

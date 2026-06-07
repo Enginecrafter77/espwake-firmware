@@ -35,7 +35,7 @@ def map_reply_status(status):
 		return f"unknown_error({status})"
 
 def map_reply_devstatus(devstatus):
-	r_map = ["off", "powering off", "powering on", "on"]
+	r_map = ["off", "powering off", "powering on", "on", "suspended"]
 	return r_map[devstatus]
 
 def make_request(cmd, passwd):
