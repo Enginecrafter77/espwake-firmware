@@ -170,7 +170,7 @@ void espwake_power_on(espwake_t *espwake) {
 }
 
 void espwake_shutdown(espwake_t *espwake) {
-    if (espwake->state == ESPWAKE_STATE_POWERING_OFF || espwake->state == ESPWAKE_STATE_POWERED_OFF) {
+    if (espwake->state == ESPWAKE_STATE_POWERING_OFF || espwake->state == ESPWAKE_STATE_POWERED_OFF || espwake->state == ESPWAKE_STATE_SUSPENDED) {
         return;
     }
     espwake->state = ESPWAKE_STATE_POWERING_OFF;
